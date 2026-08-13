@@ -50,6 +50,11 @@ async function reservarCita(req, res) {
             }
         }
 
+        // Si la fecha/hora no está dentro del horario del médico, rechazar la reserva
+        if (!dentroHorario) {
+            return res.status(400).send({ msg: "La fecha y hora seleccionadas están fuera del horario de atención del médico. Selecciona una fecha/hora disponible según el horario del médico." });
+        }
+
         // Verificar si ya existe una cita para mismo medico/fecha/hora (no contar adicionales)
         const citaExistente = await Cita.findOne({
             medico_id,
@@ -81,7 +86,6 @@ async function reservarCita(req, res) {
             hora,
             motivo_consulta,
             estado: "reservada",
-            fuera_rango: !dentroHorario,
             is_adicional
         });
 
@@ -97,11 +101,7 @@ async function reservarCita(req, res) {
             console.warn("No se pudo emitir socket nueva_cita:", err.message);
         }
 
-        const msg = citaSaved.fuera_rango
-            ? "Cita reservada correctamente, pero está fuera del horario de atención del médico"
-            : "Cita reservada correctamente";
-
-        res.status(201).send({ msg, cita: citaSaved });
+        res.status(201).send({ msg: "Cita reservada correctamente", cita: citaSaved });
 
     } catch (error) {
         console.error(error);
