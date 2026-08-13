@@ -21,4 +21,7 @@ api.post("/medicos/bloqueo", ensureAuth, verificarMedico, MedicoController.bloqu
 api.get("/medicos/bloqueos/:medico_id", ensureAuth, MedicoController.getBloqueos);
 api.delete("/medicos/bloqueo/:id", ensureAuth, MedicoController.deleteBloqueo);
 
+// Disponibilidad (FEAT)
+api.get("/medicos/disponibilidad/:medico_id", ensureAuth, MedicoController.getDisponibilidad);
+
 module.exports = api;
