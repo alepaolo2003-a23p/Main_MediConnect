@@ -2,6 +2,7 @@ const Usuario = require("../models/Usuario");
 const Horario = require("../models/Horario");
 const Bloqueo = require("../models/Bloqueo");
 const bcrypt = require("bcryptjs");
+const Cita = require("../models/Cita");
 
 // RF-02: Administrador registra médico
 async function registrarMedico(req, res) {
@@ -205,6 +206,85 @@ async function deleteBloqueo(req, res) {
     }
 }
 
+// NUEVO: obtener disponibilidad por fecha/hora para un médico
+async function getDisponibilidad(req, res) {
+    try {
+        const { medico_id } = req.params;
+        const { desde, hasta } = req.query;
+        if (!desde || !hasta) return res.status(400).send({ msg: "Parametros desde y hasta son requeridos" });
+
+        const horario = await Horario.findOne({ medico_id, activo: true });
+        if (!horario) return res.status(404).send({ msg: "Horario no encontrado para este médico" });
+
+        const start = new Date(desde);
+        const end = new Date(hasta);
+        const disponibilidad = {};
+        const adicionalesRestantes = {};
+        const MAX_ADICIONALES_POR_FECHA = 10;
+
+        // helper
+        const toMinutes = (h) => {
+            const [hh, mm] = h.split(":").map(Number);
+            return hh * 60 + mm;
+        };
+
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            const fechaStr = d.toISOString().split("T")[0];
+            const weekday = d.getDay();
+
+            // verificar bloqueos
+            const bloqueo = await Bloqueo.findOne({
+                medico_id,
+                fecha_inicio: { $lte: new Date(fechaStr) },
+                fecha_fin: { $gte: new Date(fechaStr) }
+            });
+            if (bloqueo) {
+                disponibilidad[fechaStr] = [];
+                adicionalesRestantes[fechaStr] = 0;
+                continue;
+            }
+
+            const diaConfig = horario.dias.find(x => x.dia === weekday);
+            if (!diaConfig) {
+                disponibilidad[fechaStr] = [];
+                adicionalesRestantes[fechaStr] = 0;
+                continue;
+            }
+
+            // generar slots
+            const slots = [];
+            const from = toMinutes(diaConfig.hora_inicio);
+            const to = toMinutes(diaConfig.hora_fin);
+            const dur = horario.duracion_cita || 30;
+            for (let m = from; m + dur <= to; m += dur) {
+                const hh = String(Math.floor(m / 60)).padStart(2, "0");
+                const mm = String(m % 60).padStart(2, "0");
+                slots.push(`${hh}:${mm}`);
+            }
+
+            // remover slots ocupados
+            const citas = await Cita.find({
+                medico_id,
+                fecha: new Date(fechaStr),
+                estado: { $in: ["reservada", "confirmada"] }
+            });
+
+            const ocupadas = new Set(citas.map(c => c.hora));
+            const disponibles = slots.filter(s => !ocupadas.has(s));
+
+            const adicionalesCount = citas.filter(c => c.is_adicional).length;
+            disponibilidad[fechaStr] = disponibles;
+            adicionalesRestantes[fechaStr] = Math.max(0, MAX_ADICIONALES_POR_FECHA - adicionalesCount);
+        }
+
+        res.status(200).send({ disponibilidad, adicionalesRestantes });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ msg: "Error al obtener la disponibilidad" });
+    }
+}
+
 module.exports = {
     registrarMedico,
     getMedicos,
@@ -213,5 +293,6 @@ module.exports = {
     getHorario,
     bloquearFecha,
     getBloqueos,
-    deleteBloqueo
+    deleteBloqueo,
+    getDisponibilidad
 };
