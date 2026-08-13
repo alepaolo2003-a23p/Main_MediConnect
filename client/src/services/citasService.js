@@ -6,7 +6,8 @@ export async function reservarCitaRequest({ medico_id, fecha, hora, motivo_consu
     body: JSON.stringify({ medico_id, fecha, hora, motivo_consulta }),
   });
   const data = await handleResponse(res);
-  return data.cita;
+  // devolver msg y cita para que el frontend pueda mostrar advertencias (fuera_rango) o si es adicional
+  return { msg: data.msg, cita: data.cita };
 }
 
 export async function getCitasMedicoRequest(medicoId, { desde, hasta } = {}) {
