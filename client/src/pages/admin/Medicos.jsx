@@ -4,11 +4,23 @@ import { getClinicasRequest } from "../../services/clinicasService";
 import "../dashboard-shared.scss";
 import "./CrudPage.scss";
 
+const PRESET_ESPECIALIDADES = [
+  "Medicina General",
+  "Pediatría",
+  "Ginecología",
+  "Cardiología",
+  "Dermatología",
+  "Odontología",
+  "Psiquiatría",
+  "Neurología",
+];
+
 const emptyForm = {
   nombre: "",
   correo: "",
   password: "",
   especialidad: "",
+  especialidad_otra: "",
   clinica_id: "",
   dni: "",
   telefono: "",
@@ -55,7 +67,14 @@ export function Medicos() {
     setFormError(null);
     setSaving(true);
     try {
-      await registrarMedicoRequest(formData);
+      const payload = { ...formData };
+      if (payload.especialidad === "__OTRO__") {
+        payload.especialidad = payload.especialidad_otra || "Otros";
+      }
+      // cleanup
+      delete payload.especialidad_otra;
+
+      await registrarMedicoRequest(payload);
       setFormData(emptyForm);
       setShowForm(false);
       await load();
@@ -106,16 +125,32 @@ export function Medicos() {
                 required
               />
             </div>
+
             <div className="crud-field">
               <label>Especialidad</label>
-              <input
-                name="especialidad"
-                value={formData.especialidad}
-                onChange={handleChange}
-                placeholder="Medicina General"
-                required
-              />
+              <select name="especialidad" value={formData.especialidad} onChange={handleChange} required>
+                <option value="">Selecciona una especialidad</option>
+                {PRESET_ESPECIALIDADES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+                <option value="__OTRO__">Otros</option>
+              </select>
             </div>
+
+            {formData.especialidad === "__OTRO__" && (
+              <div className="crud-field">
+                <label>Otra especialidad</label>
+                <input
+                  name="especialidad_otra"
+                  value={formData.especialidad_otra}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            )}
+
             <div className="crud-field">
               <label>Clínica</label>
               <select name="clinica_id" value={formData.clinica_id} onChange={handleChange} required>
