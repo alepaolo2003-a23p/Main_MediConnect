@@ -1,7 +1,11 @@
 const Cita = require("../models/Cita");
 const Usuario = require("../models/Usuario");
+const Horario = require("../models/Horario");
+const Bloqueo = require("../models/Bloqueo");
 
 // RF-08 y RF-09: paciente reserva un turno
+const MAX_ADICIONALES_POR_FECHA = 10;
+
 async function reservarCita(req, res) {
     try {
         const paciente_id = req.user_id;
@@ -16,27 +20,87 @@ async function reservarCita(req, res) {
             return res.status(404).send({ msg: "Médico no encontrado" });
         }
 
+        const fechaObj = new Date(fecha);
+        const weekday = fechaObj.getDay(); // 0 domingo ... 6 sábado
+
+        // Revisar bloqueos
+        const bloqueo = await Bloqueo.findOne({
+            medico_id,
+            fecha_inicio: { $lte: fechaObj },
+            fecha_fin: { $gte: fechaObj }
+        });
+        if (bloqueo) {
+            return res.status(400).send({ msg: "El médico no atiende en la fecha seleccionada (bloqueo)" });
+        }
+
+        // Revisar horario del médico para el día
+        const horario = await Horario.findOne({ medico_id, activo: true });
+        let dentroHorario = false;
+        if (horario && horario.dias && horario.dias.length > 0) {
+            const diaConfig = horario.dias.find(d => Number(d.dia) === Number(weekday));
+            if (diaConfig) {
+                const toMinutes = (h) => {
+                    const [hh, mm] = h.split(":").map(Number);
+                    return hh * 60 + mm;
+                };
+                const t = toMinutes(hora);
+                const inicio = toMinutes(diaConfig.hora_inicio);
+                const fin = toMinutes(diaConfig.hora_fin);
+                if (t >= inicio && t < fin) dentroHorario = true;
+            }
+        }
+
+        // Si la fecha/hora no está dentro del horario del médico, rechazar la reserva
+        if (!dentroHorario) {
+            return res.status(400).send({ msg: "La fecha y hora seleccionadas están fuera del horario de atención del médico. Selecciona una fecha/hora disponible según el horario del médico." });
+        }
+
+        // Verificar si ya existe una cita para mismo medico/fecha/hora (no contar adicionales)
         const citaExistente = await Cita.findOne({
             medico_id,
-            fecha,
+            fecha: fechaObj,
             hora,
-            estado: { $in: ["reservada", "confirmada"] }
+            estado: { $in: ["reservada", "confirmada"] },
+            is_adicional: false
         });
 
+        let is_adicional = false;
         if (citaExistente) {
-            return res.status(400).send({ msg: "Ese turno ya no está disponible" });
+            // permitir adicionales por fecha si no se pasó el límite
+            const adicionalesCount = await Cita.countDocuments({
+                medico_id,
+                fecha: fechaObj,
+                is_adicional: true,
+                estado: { $in: ["reservada", "confirmada"] }
+            });
+            if (adicionalesCount >= MAX_ADICIONALES_POR_FECHA) {
+                return res.status(400).send({ msg: "No hay turnos disponibles (incluyendo adicionales)" });
+            }
+            is_adicional = true;
         }
 
         const cita = new Cita({
             paciente_id,
             medico_id,
-            fecha,
+            fecha: fechaObj,
             hora,
             motivo_consulta,
-            estado: "reservada"
+            estado: "reservada",
+            is_adicional
         });
 
         const citaSaved = await cita.save();
+
+        // Emitir evento en tiempo real al médico (si tienes socket.io configurado)
+        try {
+            const io = req.app.get('io'); // requiere que app.js haga app.set('io', io)
+            if (io && medico._id) {
+                io.to(String(medico._id)).emit("nueva_cita", { cita: citaSaved });
+            }
+        } catch (err) {
+            console.warn("No se pudo emitir socket nueva_cita:", err.message);
+        }
+
         res.status(201).send({ msg: "Cita reservada correctamente", cita: citaSaved });
 
     } catch (error) {

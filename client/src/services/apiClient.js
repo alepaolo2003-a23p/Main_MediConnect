@@ -28,6 +28,12 @@ async function refreshAccessToken() {
 
   const data = await res.json();
   localStorage.setItem("accessToken", data.accessToken);
+  // Notificar a otros listeners (p. ej. AuthProvider o sockets) que el token se renovó
+  try {
+    window.dispatchEvent(new CustomEvent("accessTokenRefreshed", { detail: { token: data.accessToken } }));
+  } catch (e) {
+    // noop en entornos sin window
+  }
   return data.accessToken;
 }
 

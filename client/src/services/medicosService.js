@@ -65,3 +65,15 @@ export async function deleteBloqueoRequest(id) {
   const res = await apiFetch(`/medicos/bloqueo/${id}`, { method: "DELETE" });
   return handleResponse(res);
 }
+
+// NUEVA: obtener disponibilidad por rango (disponibilidad + adicionalesRestantes)
+export async function getDisponibilidadRequest(medicoId, { desde, hasta }) {
+  const params = new URLSearchParams();
+  if (desde) params.set("desde", desde);
+  if (hasta) params.set("hasta", hasta);
+  const query = params.toString() ? `?${params.toString()}` : "";
+
+  const res = await apiFetch(`/medicos/disponibilidad/${medicoId}${query}`);
+  const data = await handleResponse(res);
+  return data; // { disponibilidad, adicionalesRestantes }
+}

@@ -4,12 +4,15 @@ import { DonutChart } from "../../components/DonutChart";
 import { StatusBadge } from "../../components/StatusBadge";
 import { useAuth } from "../../hooks/useAuth";
 import { getCitasMedicoRequest } from "../../services/citasService";
+import { io } from "socket.io-client";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "../dashboard-shared.scss";
 
 const todayISO = () => new Date().toISOString().split("T")[0];
 
 export function MedicoDashboard() {
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
   const [citas, setCitas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,6 +32,30 @@ export function MedicoDashboard() {
     }
     if (user?._id) load();
   }, [user]);
+
+  useEffect(() => {
+    if (!user?._id) return;
+    const base = import.meta.env.VITE_API_URL?.replace('/api/v1','') || 'http://localhost:3977';
+    const socket = io(base, {
+      auth: {
+        token: accessToken,
+      },
+      transports: ["websocket", "polling"],
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("Socket connect error:", err.message);
+      toast.error("Error de conexión en tiempo real. Revisa tu sesión.");
+    });
+
+    socket.on('nueva_cita', ({ cita }) => {
+      toast.info(`Nueva reserva: ${new Date(cita.fecha).toLocaleDateString()} ${cita.hora}`);
+      // opcional: refrescar lista de citas
+      getCitasMedicoRequest(user._id).then(setCitas).catch(() => {});
+    });
+
+    return () => socket.disconnect();
+  }, [user, accessToken]);
 
   const citasHoy = useMemo(
     () => citas.filter((c) => c.fecha && new Date(c.fecha).toISOString().split("T")[0] === todayISO()),
@@ -73,6 +100,7 @@ export function MedicoDashboard() {
 
   return (
     <div>
+      <ToastContainer />
       {error && <p className="error-state">{error}</p>}
 
       <div className="stats-grid">
@@ -168,8 +196,7 @@ export function MedicoDashboard() {
                 <div className="list-item__body">
                   <strong>{c.paciente_id?.nombre}</strong>
                   <span>
-                    {new Date(c.fecha).toLocaleDateString("es-PE")} · {c.hora} ·{" "}
-                    {c.motivo_consulta || "Consulta"}
+                    {new Date(c.fecha).toLocaleDateString("es-PE")} · {c.hora} · {c.motivo_consulta || "Consulta"}
                   </span>
                 </div>
                 <StatusBadge status={c.estado} />
