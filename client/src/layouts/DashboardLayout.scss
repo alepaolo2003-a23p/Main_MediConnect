@@ -1,0 +1,177 @@
+@use "../styles/colors" as *;
+
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.dashboard-sidebar {
+  width: 250px;
+  min-width: 250px;
+  background: $panel-dark;
+  color: $text-light;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 16px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 8px 22px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 18px;
+
+    strong {
+      display: block;
+      font-size: 15px;
+    }
+    small {
+      display: block;
+      font-size: 10.5px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+  }
+
+  &__logo-mark {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: $accent-teal;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 18px;
+  }
+
+  &__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  &__logout {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: rgba(255, 255, 255, 0.85);
+    padding: 10px 14px;
+    border-radius: $radius-sm;
+    font-size: 13.5px;
+    margin-top: 14px;
+    transition: background 0.15s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+  }
+}
+
+.dash-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: $radius-sm;
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.75);
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: $text-light;
+  }
+
+  &--active {
+    background: $accent-teal;
+    color: $text-light;
+    font-weight: 600;
+  }
+
+  &__icon {
+    font-size: 15px;
+  }
+}
+
+.dashboard-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: $bg-card;
+  border-bottom: 1px solid $border-soft;
+  padding: 18px 28px;
+
+  h1 {
+    font-size: 19px;
+    margin: 0;
+    color: $text-primary;
+  }
+  p {
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    color: $text-secondary;
+  }
+
+  &__user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    strong {
+      display: block;
+      font-size: 13.5px;
+      color: $text-primary;
+    }
+    span {
+      display: block;
+      font-size: 11.5px;
+      color: $text-secondary;
+    }
+  }
+
+  &__avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: $primary-light;
+    color: $primary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+  }
+}
+
+.dashboard-main {
+  flex: 1;
+  padding: 24px 28px 40px;
+  background: $bg-app;
+}
+
+@media (max-width: 900px) {
+  .dashboard-sidebar {
+    position: fixed;
+    left: -260px;
+    z-index: 20;
+    transition: left 0.2s;
+  }
+  .dashboard-main {
+    padding: 18px;
+  }
+}
