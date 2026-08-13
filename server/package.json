@@ -19,6 +19,7 @@
     "mogoose": "^0.0.1-security",
     "mongoose": "6.6.1",
     "multer": "2.2.0",
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "socket.io": "^4.7.2"
   }
 }
