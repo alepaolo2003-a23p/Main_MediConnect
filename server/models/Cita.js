@@ -10,7 +10,9 @@ const CitaSchema = mongoose.Schema({
         enum: ['reservada', 'confirmada', 'atendida', 'cancelada', 'no_asistio'],
         default: 'reservada'
     },
-    motivo_consulta: String
+    motivo_consulta: String,
+    fuera_rango: { type: Boolean, default: false },
+    is_adicional: { type: Boolean, default: false }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Cita", CitaSchema);
