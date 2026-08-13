@@ -1,0 +1,277 @@
+@use "../styles/colors" as *;
+
+.home-page {
+  min-height: 100vh;
+  background: $bg-app;
+  color: $text-primary;
+}
+
+.home-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 48px;
+  background: $bg-card;
+  border-bottom: 1px solid $border;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  @media (max-width: 720px) {
+    padding: 16px 20px;
+  }
+}
+
+.home-nav {
+  display: flex;
+  gap: 32px;
+
+  a {
+    color: $text-secondary;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+
+    &:hover {
+      color: $primary;
+    }
+  }
+
+  @media (max-width: 720px) {
+    display: none;
+  }
+}
+
+.home-header__cta {
+  background: $primary;
+  color: $text-light;
+  padding: 10px 20px;
+  border-radius: $radius-sm;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+
+  &:hover {
+    background: $primary-dark;
+  }
+}
+
+.home-hero {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 40px;
+  padding: 56px 48px;
+  align-items: center;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    padding: 40px 20px;
+  }
+}
+
+.home-hero__badge {
+  display: inline-block;
+  background: $primary-light;
+  color: $primary-dark;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 5px 12px;
+  border-radius: 999px;
+  margin-bottom: 16px;
+}
+
+.home-hero__content {
+  h1 {
+    font-size: 44px;
+    line-height: 1.15;
+    font-weight: 800;
+    margin: 0 0 18px;
+    color: $text-primary;
+
+    span {
+      color: $primary;
+    }
+
+    @media (max-width: 720px) {
+      font-size: 32px;
+    }
+  }
+
+  p {
+    color: $text-secondary;
+    font-size: 16px;
+    line-height: 1.6;
+    max-width: 520px;
+    margin: 0 0 28px;
+  }
+}
+
+.home-hero__actions {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 40px;
+
+  .btn-primary {
+    background: $primary;
+    color: $text-light;
+    padding: 13px 22px;
+    border-radius: $radius-sm;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      background: $primary-dark;
+    }
+  }
+
+  .btn-outline {
+    border: 1.5px solid $border;
+    color: $text-primary;
+    padding: 13px 22px;
+    border-radius: $radius-sm;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      border-color: $primary;
+      color: $primary;
+    }
+  }
+}
+
+.home-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.home-features__card {
+  background: $bg-card;
+  border: 1px solid $border;
+  border-radius: $radius-md;
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  box-shadow: $shadow-sm;
+
+  strong {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 12.5px;
+    color: $text-secondary;
+  }
+}
+
+.home-features__icon {
+  font-size: 20px;
+}
+
+.home-hero__visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @media (max-width: 900px) {
+    display: none;
+  }
+}
+
+.home-hero__visual-card {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: $radius-lg;
+  background: linear-gradient(160deg, $primary 0%, $primary-dark 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: $shadow-md;
+}
+
+.home-section {
+  padding: 56px 48px;
+  text-align: center;
+
+  @media (max-width: 720px) {
+    padding: 40px 20px;
+  }
+
+  h2 {
+    font-size: 28px;
+    font-weight: 800;
+    margin: 0 0 32px;
+  }
+
+  p {
+    color: $text-secondary;
+    max-width: 640px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  &--alt {
+    background: $bg-card;
+    border-top: 1px solid $border;
+    border-bottom: 1px solid $border;
+  }
+}
+
+.home-section__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.home-section__card {
+  background: $bg-card;
+  border: 1px solid $border;
+  border-radius: $radius-md;
+  padding: 28px 20px;
+  box-shadow: $shadow-sm;
+
+  span {
+    font-size: 26px;
+  }
+
+  h3 {
+    margin: 12px 0 8px;
+    font-size: 16px;
+  }
+
+  p {
+    font-size: 13.5px;
+    color: $text-secondary;
+    margin: 0;
+  }
+}
+
+.home-footer {
+  background: $panel-dark;
+  color: $text-light;
+  padding: 32px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
+    margin: 0;
+  }
+}

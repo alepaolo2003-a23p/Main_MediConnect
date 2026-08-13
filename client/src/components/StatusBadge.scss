@@ -1,0 +1,32 @@
+@use "../styles/colors" as *;
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &--success {
+    background: $success-bg;
+    color: $success;
+  }
+  &--warning {
+    background: $warning-bg;
+    color: $warning;
+  }
+  &--danger {
+    background: $danger-bg;
+    color: $danger;
+  }
+  &--info {
+    background: $info-bg;
+    color: $info;
+  }
+  &--default {
+    background: $border-soft;
+    color: $text-secondary;
+  }
+}
